@@ -1,6 +1,8 @@
-OUTPUT_PATTERN="$HOME/.psm/outputs/{}.out"
+from os.path import expanduser
+home = expanduser("~")
+OUTPUT_PATTERN=home+"/.psm/outputs/{}.out"
 DEFINITION_FILE="./job_definitions"
-JOBS_FILE="$HOME/.psm/job_list"
+JOBS_FILE=home+"/.psm/job_list"
 template="""#!/bin/bash
 #SBATCH --partition=<<<DEFAULT_PARTITION>>>
 #SBATCH --output={outputfolder}
