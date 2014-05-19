@@ -1,0 +1,24 @@
+OUTPUT_PATTERN="$HOME/.psm/outputs/{}.out"
+DEFINITION_FILE="./job_definitions"
+JOBS_FILE="$HOME/.psm/job_list"
+template="""#!/bin/bash
+#SBATCH --partition=<<<DEFAULT_PARTITION>>>
+#SBATCH --output={outputfolder}
+#SBATCH --job-name={jobname}
+{GLOBALPARAMS}
+# =============================================================================
+
+echo ------------------------------------------------------------------------------
+echo -n "Starting at "; date
+echo ------------------------------------------------------------------------------
+echo
+
+{commands}
+
+
+echo
+echo ------------------------------------------------------------------------------
+echo -n "Finished at "; date
+echo ------------------------------------------------------------------------------
+"""
+option_template="""#SBATCH --{}={}"""
