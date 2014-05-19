@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import traceback
 import pygtk
 pygtk.require("2.0")
 import gtk,gobject
@@ -43,13 +44,26 @@ class JobDefinition:
 				continue
 			goptions.append(option_template.format(key,val))
 		scripts=[]
-		for number in range(len(self.parameters)):
-			commands=self.commands.format(*(self.parameters[number]))
+		if len(self.parameters)==1 and self.parameters[0][0].startswith("RUN="):
+			p=subprocess.Popen(self.parameters[0][0][4:].split(" "),stdout=subprocess.PIPE)
+			out,err=p.communicate()
+			tmp_params2=out.split("\n")
+			tmp_params=[]
+			for p in tmp_params2:
+				if p!="":
+					tmp_params.append(p.split(","))
+			print("***** PARAMETERS USED *****")
+			print(tmp_params)
+			print("***** END *****")
+		else:
+			tmp_params=self.parameters
+		for number in range(len(tmp_params)):
+			commands=self.commands.format(*(tmp_params[number]))
 			info=self.infodict.copy()
 			info["outputfolder"]=OUTPUT_PATTERN.format("%j")
 			info["commands"]=commands
 			info["GLOBALPARAMS"]="\n".join(goptions)
-			scripts.append(template.format(**info))
+			scripts.append((template.format(**info),",".join(tmp_params[number])))
 		return scripts
 
 
@@ -119,29 +133,35 @@ class JobDescriptionDialog(gtk.Dialog):
 			self.gparambuffer.set_text("\n".join(gparamstrings))
 
 	def ok_clicked(self,widget):
-		"""numcpu=self.numcpu.get_text()"""
-		#mempercpu=self.mempercpu.get_text()
-		jobname=self.jobname.get_text()
+		try:
+			"""numcpu=self.numcpu.get_text()"""
+			#mempercpu=self.mempercpu.get_text()
+			jobname=self.jobname.get_text()
 
-		commands=self.commandbuffer.get_text(self.commandbuffer.get_start_iter(),self.commandbuffer.get_end_iter())
-		text=self.parambuffer.get_text(self.parambuffer.get_start_iter(),self.parambuffer.get_end_iter())
-		gtext=self.gparambuffer.get_text(self.gparambuffer.get_start_iter(),self.gparambuffer.get_end_iter())
+			commands=self.commandbuffer.get_text(self.commandbuffer.get_start_iter(),self.commandbuffer.get_end_iter())
+			text=self.parambuffer.get_text(self.parambuffer.get_start_iter(),self.parambuffer.get_end_iter())
+			gtext=self.gparambuffer.get_text(self.gparambuffer.get_start_iter(),self.gparambuffer.get_end_iter())
 
-		strings=text.split("\n")
-		params=[]
-		for i in range(len(strings)):
-			params.append(strings[i].split(","))
+			strings=text.split("\n")
+			params=[]
+			for i in range(len(strings)):
+				params.append(strings[i].split(","))
 
-		gstrings=gtext.split("\n")
-		gparams={}
-		for i in range(len(gstrings)):
-			#print(gstrings[i])
-			s=gstrings[i].split("=")
-			a=s[0]
-			b=s[1]
-			gparams[a]=b
+			gstrings=gtext.split("\n")
+			gparams={}
+			for i in range(len(gstrings)):
+				if len(gstrings[i])==0:
+					continue
+				#print(gstrings[i])
+				s=gstrings[i].split("=")
+				a=s[0]
+				b=s[1]
+				gparams[a]=b
 
-		self.definition=JobDefinition(jobname,commands,params,gparams)
+			self.definition=JobDefinition(jobname,commands,params,gparams)
+		except Exception as e:
+			traceback.print_exc()
+			#print("***** {} *****".format(e))
 
 
 class MainWindow(gtk.Window):
@@ -301,7 +321,7 @@ class MainWindow(gtk.Window):
 		defi=self.get_definition_from_name(name)
 		scripts=defi.job_scripts()
 		for i in range(len(scripts)):
-			self.start_job(defi.infodict["jobname"],scripts[i],",".join(defi.parameters[i]))
+			self.start_job(defi.infodict["jobname"],scripts[i][0],scripts[i][1])
 	
 	def edit_definition_dialog(self,widget):
 		model, treeiter = self.definition_tree.get_selection().get_selected()
@@ -312,6 +332,8 @@ class MainWindow(gtk.Window):
 		if result==gtk.RESPONSE_OK:
 			self.definitions.remove(defi)
 			self.definition_store.remove(treeiter)
+			if dialog.definition is None:
+				raise Exception("definition not set!")
 			self.add_definition(dialog.definition)
 		dialog.destroy()
 	
@@ -320,6 +342,8 @@ class MainWindow(gtk.Window):
 		result=dialog.run()
 		if result==gtk.RESPONSE_OK:
 			#print(dialog.__dict__)
+			if dialog.definition is None:
+				raise Exception("definition not set!")
 			self.add_definition(dialog.definition)
 		dialog.destroy()
 	
@@ -434,7 +458,9 @@ class MainWindow(gtk.Window):
 	def add_definition(self,desc):
 		print("before adding: ",self.definitions)
 		for defi in self.definitions:
-			if defi.infodict["jobname"]==desc.infodict["jobname"]:
+			d1i=defi.infodict["jobname"]
+			d2i=desc.infodict["jobname"]
+			if d1i==d2i:
 				raise Exception("There is already a job definition with name \"{}\"".format(desc.infodict["jobname"]))
 		self.definitions.append(desc)
 		self.definition_store.append([desc.infodict["jobname"]])

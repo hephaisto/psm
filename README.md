@@ -54,6 +54,12 @@ List of parameters given to each instance. These parameters are formatted into t
     1,10
     10,10
 
+Use
+
+    RUN=SCRIPTNAME
+
+to use a script name that outputs parameters to stdout.
+
 #### Global parameters
 Global parameters are passed to SLURM to request e.g. additional memory or a certain number of CPUs. Separate multiple options with linebreaks and key/value pairs with `=`, e.g.
 
