@@ -399,7 +399,7 @@ class MainWindow(gtk.Window):
 									self.set_state(row,state_word,show_notifications)
 									return
 							except Exception as e:
-								print("Error: {}".format(e))
+								pass
 
 						match=re.search("Finished at",outlines[-2])
 						if match is not None:
