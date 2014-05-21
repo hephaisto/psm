@@ -403,7 +403,7 @@ class MainWindow(gtk.Window):
 									self.set_state(row,state_word,show_notifications)
 									return
 							except Exception as e:
-								pass
+								print("Error: {}".format(e))
 
 						match=re.search("Finished at",outlines[-2])
 						if match is not None:
@@ -411,7 +411,6 @@ class MainWindow(gtk.Window):
 							return
 						self.set_state(row,"running",show_notifications)
 					except (IOError,IndexError) as e:
-						print("Error: {}".format(e))
 						self.set_state(row,"pending",show_notifications)
 			check_state()
 		return True
