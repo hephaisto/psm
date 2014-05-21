@@ -299,7 +299,7 @@ class MainWindow(gtk.Window):
 				if not self.store.remove(treeiter):
 					return
 			else:
-				self.store.iternext(treeiter)
+				treeiter=self.store.iter_next(treeiter)
 	
 	def joblist_delete(self,widget):
 		model, treeiter = self.tree.get_selection().get_selected()
