@@ -238,6 +238,7 @@ class MainWindow(gtk.Window):
 		# btn_job_refresh needs no callback!
 		btn_job_clear.connect("clicked",self.joblist_clear)
 		btn_job_delete.connect("clicked",self.joblist_delete)
+		btn_job_cancel.connect("clicked",self.joblist_cancel)
 
 		# JOB DEFINITION ACTIONS
 		def_toolbar = gtk.Toolbar()
@@ -311,7 +312,7 @@ class MainWindow(gtk.Window):
 	def joblist_cancel(self,widget):
 		model, treeiter = self.tree.get_selection().get_selected()
 		jobid=model[treeiter][col_id]
-		subprocess.call(["scancel",jobid])
+		subprocess.call(["scancel",str(jobid)])
 
 
 	def get_definition_from_name(self,name):
