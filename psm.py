@@ -293,7 +293,9 @@ class MainWindow(gtk.Window):
 		treeiter = self.store.get_iter_first()
 		while treeiter != None:
 			if self.store[treeiter][col_state] in ["done","cancelled","error"]:
-				os.remove(OUTPUT_PATTERN.format(self.store[treeiter][col_id]))
+				try:
+					os.remove(OUTPUT_PATTERN.format(self.store[treeiter][col_id]))
+				except: pass
 				if not self.store.remove(treeiter):
 					return
 			else:
@@ -301,7 +303,9 @@ class MainWindow(gtk.Window):
 	
 	def joblist_delete(self,widget):
 		model, treeiter = self.tree.get_selection().get_selected()
-		os.remove(OUTPUT_PATTERN.format(self.store[treeiter][col_id]))
+		try:
+			os.remove(OUTPUT_PATTERN.format(self.store[treeiter][col_id]))
+		except: pass
 		self.store.remove(treeiter)
 	
 	def joblist_cancel(self,widget):
