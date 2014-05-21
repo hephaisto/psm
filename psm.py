@@ -371,10 +371,13 @@ class MainWindow(gtk.Window):
 		#jobname="testjob"
 		#jobscript=template.format(jobname=jobname,mempercpu="1000",numtasks="1",commands="sleep 10",outputfolder=OUTPUT_PATTERN.format("%j"))
 		
-		p=subprocess.Popen(["sbatch","--"],stdin=subprocess.PIPE,stdout=subprocess.PIPE)
+		p=subprocess.Popen(["sbatch","--"],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
 		out,err=p.communicate(jobscript)
 		match=re.search("Submitted batch job (\d+)\n",out)
 		if match is None:
+			msgbox=gtk.MessageDialog(parent=None, flags=0, type=gtk.MESSAGE_ERROR, buttons=gtk.BUTTONS_OK, message_format=err)
+			msgbox.run()
+			msgbox.destroy()
 			raise Exception("unable to start job: {};{}".format(out,err))
 		jobid=int(match.group(1))
 		now=datetime.datetime.now().isoformat()
