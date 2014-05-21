@@ -355,9 +355,12 @@ class MainWindow(gtk.Window):
 	def job_selected(self,selection):
 		model,treeiter=selection.get_selected()
 		filename=OUTPUT_PATTERN.format(model[treeiter][0])
-		with open(filename,"r") as f:
-			content=f.read()
-		self.outputbuffer.set_text(content)
+		try:
+			with open(filename,"r") as f:
+				content=f.read()
+			self.outputbuffer.set_text(content)
+		except:
+			self.outputbuffer.set_text("NO OUTPUTFILE FOUND")
 	
 	def main(self):
 		gtk.main()
