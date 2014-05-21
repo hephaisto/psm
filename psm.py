@@ -267,15 +267,17 @@ class MainWindow(gtk.Window):
 
 		# TABLE
 		self.table=gtk.Table(3,2,False)
-		self.table.attach(self.tree,0,1,1,2)
-		self.table.attach(job_toolbar,0,1,0,1)
+		treescroll=gtk.ScrolledWindow()
+		treescroll.add(self.tree)
+		self.table.attach(treescroll,0,1,1,2,yoptions=gtk.EXPAND|gtk.FILL|gtk.SHRINK,xoptions=gtk.EXPAND|gtk.FILL|gtk.SHRINK)
+		self.table.attach(job_toolbar,0,1,0,1,yoptions=0)
 
-		self.table.attach(self.definition_tree,1,2,1,2)
-		self.table.attach(def_toolbar,1,2,0,1)
-		#self.table.attach(self.btn_add_definition,1,2,2,3)
-		#self.table.attach(self.btn_run,1,2,3,4)
+		self.table.attach(self.definition_tree,1,2,1,2,xoptions=gtk.SHRINK)
+		self.table.attach(def_toolbar,1,2,0,1,yoptions=0,xoptions=gtk.FILL)
 
-		self.table.attach(self.output,2,3,1,2)
+		outputscroll=gtk.ScrolledWindow()
+		outputscroll.add(self.output)
+		self.table.attach(outputscroll,2,3,1,2,xoptions=gtk.FILL|gtk.EXPAND)
 
 		self.table.set_col_spacings(5)
 
