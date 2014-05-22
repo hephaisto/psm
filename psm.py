@@ -198,8 +198,8 @@ class MainWindow(gtk.Window):
 		self.tree=gtk.TreeView(self.store)
 		self.tree.append_column(gtk.TreeViewColumn("time",gtk.CellRendererText(),text=1))
 		self.tree.append_column(gtk.TreeViewColumn("name",gtk.CellRendererText(),text=2))
-		self.tree.append_column(gtk.TreeViewColumn("parameters",gtk.CellRendererText(),text=5))
 		self.tree.append_column(gtk.TreeViewColumn("status",gtk.CellRendererText(),text=3,foreground=4))
+		self.tree.append_column(gtk.TreeViewColumn("parameters",gtk.CellRendererText(),text=5))
 	
 		self.tree.get_selection().connect("changed",self.job_selected)
 
