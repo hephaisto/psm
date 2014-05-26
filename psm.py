@@ -224,6 +224,7 @@ class MainWindow(gtk.Window):
 		btn_job_refresh=gtk.ToggleToolButton(gtk.STOCK_REFRESH)
 		btn_job_refresh.set_active(True)
 		self.refresh_enabled=btn_job_refresh.get_active
+		self.refresh_output_enabled=btn_job_refresh.get_active
 		btn_job_delete=gtk.ToolButton(gtk.STOCK_DELETE)
 		btn_job_clear=gtk.ToolButton(gtk.STOCK_CLEAR)
 		btn_job_cancel=gtk.ToolButton(gtk.STOCK_MEDIA_STOP)
@@ -357,6 +358,8 @@ class MainWindow(gtk.Window):
 	def job_selected(self,selection):
 		model,treeiter=selection.get_selected()
 		filename=OUTPUT_PATTERN.format(model[treeiter][0])
+		state=model[treeiter][col_state]
+		self.refresh_output_enabled=self.refresh_enabled and state not in ["done","cancelled"]
 		try:
 			with open(filename,"r") as f:
 				content=f.read()
@@ -396,10 +399,22 @@ class MainWindow(gtk.Window):
 	def update_job_list(self,show_notifications=True):
 		if not self.refresh_enabled():
 			return True
-		for row in self.store:
+		treeiter = self.store.get_iter_first()
+		job_selection=self.tree.get_selection()
+		model,selected_job=job_selection.get_selected()
+		if selected_job is not None:
+			selected_job_id=self.store[selected_job][col_id]
+		else:
+			selected_job_id=None
+		while treeiter != None:
+			row=self.store[treeiter]
 			state=row[col_state]
 			filename=OUTPUT_PATTERN.format(row[col_id])
 			def check_state():
+				if self.refresh_output_enabled and selected_job_id==row[col_id]:
+					print("start match")
+					self.job_selected(job_selection)	# dirty! - will reload output even for finished jobs!
+					print("end match")
 				if state=="running" or state=="???" or state=="pending":
 					try:
 						with open(filename,"r") as f:
@@ -422,6 +437,7 @@ class MainWindow(gtk.Window):
 					except (IOError,IndexError) as e:
 						self.set_state(row,"pending",show_notifications)
 			check_state()
+			treeiter=self.store.iter_next(treeiter)
 		return True
 		# iterate over all jobs
 		# for jobs still running:
