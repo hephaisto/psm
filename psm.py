@@ -359,7 +359,7 @@ class MainWindow(gtk.Window):
 		model,treeiter=selection.get_selected()
 		filename=OUTPUT_PATTERN.format(model[treeiter][0])
 		state=model[treeiter][col_state]
-		self.refresh_output_enabled=self.refresh_enabled and state not in ["done","cancelled"]
+		self.refresh_output_enabled=self.refresh_enabled and state not in ["done","cancelled","skipped"]
 		try:
 			with open(filename,"r") as f:
 				content=f.read()
@@ -383,18 +383,20 @@ class MainWindow(gtk.Window):
 			msgbox.destroy()
 			raise Exception("unable to start job: {};{}".format(out,err))
 		jobid=int(match.group(1))
-		now=datetime.datetime.now().isoformat()
+		now=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 		self.add_job_to_list(jobid,now,jobname,parameters)
 	
 	def set_state(self,row,state,show_notifications):
 		oldstate=row[col_state]
 		row[col_state]=state
-		row[col_color]={"cancelled":"#A0A000","running":"#000000","pending":"#A0A0A0","done":"#00A000","error":"#A00000"}[state]
+		row[col_color]={"cancelled":"#A0A000","running":"#000000","pending":"#A0A0A0","done":"#00A000","skipped":"#004000","error":"#A00000"}[state]
 		if show_notifications and state!=oldstate:
 			if state=="done":
 				self.notification("Job finished","Job {} has finished!".format(row[col_name]))
 			if state=="cancelled":
 				self.notification("Job cancelled","Job {} has been cancelled!".format(row[col_name]))
+			if state=="error":
+				self.notification("ERROR in job","an error occurred in job {}!".format(row[col_name]))
 	
 	def update_job_list(self,show_notifications=True):
 		if not self.refresh_enabled():
