@@ -201,7 +201,9 @@ class MainWindow(gtk.Window):
 		self.tree.append_column(gtk.TreeViewColumn("status",gtk.CellRendererText(),text=3,foreground=4))
 		self.tree.append_column(gtk.TreeViewColumn("parameters",gtk.CellRendererText(),text=5))
 	
-		self.tree.get_selection().connect("changed",self.job_selected)
+		treeselection=self.tree.get_selection()
+		treeselection.connect("changed",self.job_selected)
+		#treeselection.set_mode(gtk.SELECTION_MULTIPLE)
 
 		self.load_jobs()
 
@@ -296,7 +298,8 @@ class MainWindow(gtk.Window):
 	def joblist_clear(self,widget):
 		treeiter = self.store.get_iter_first()
 		while treeiter != None:
-			if self.store[treeiter][col_state] in ["done","cancelled","error"]:
+			if True:
+			#if self.store[treeiter][col_state] in ["done","cancelled","skipped"]:
 				try:
 					os.remove(OUTPUT_PATTERN.format(self.store[treeiter][col_id]))
 				except: pass
@@ -414,9 +417,7 @@ class MainWindow(gtk.Window):
 			filename=OUTPUT_PATTERN.format(row[col_id])
 			def check_state():
 				if self.refresh_output_enabled and selected_job_id==row[col_id]:
-					print("start match")
 					self.job_selected(job_selection)	# dirty! - will reload output even for finished jobs!
-					print("end match")
 				if state=="running" or state=="???" or state=="pending":
 					try:
 						with open(filename,"r") as f:
@@ -430,6 +431,16 @@ class MainWindow(gtk.Window):
 									return
 							except Exception as e:
 								print("Error: {}".format(e))
+
+						match=re.search("ERROR",outlines[-1])
+						if match is not None:
+							self.set_state(row,"error",show_notifications)
+							return
+
+						match=re.search("SKIPPED",outlines[-1])
+						if match is not None:
+							self.set_state(row,"skipped",show_notifications)
+							return
 
 						match=re.search("Finished at",outlines[-2])
 						if match is not None:
