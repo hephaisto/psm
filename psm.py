@@ -262,6 +262,7 @@ class MainWindow(gtk.Window):
 		btn_def_execute.connect("clicked",self.run_definition)
 		btn_def_new.connect("clicked",self.add_definition_dialog)
 		btn_def_edit.connect("clicked",self.edit_definition_dialog)
+		btn_def_delete.connect("clicked",self.delete_definition)
 
 		# OUTPUT FILED
 		self.output=gtk.TextView()
@@ -347,6 +348,10 @@ class MainWindow(gtk.Window):
 				raise Exception("definition not set!")
 			self.add_definition(dialog.definition)
 		dialog.destroy()
+	
+	def delete_definition(self,widget):
+		model, treeiter = self.definition_tree.get_selection().get_selected()
+		self.definition_store.remove(treeiter)
 	
 	def add_definition_dialog(self,widget):
 		dialog=JobDescriptionDialog(self)
