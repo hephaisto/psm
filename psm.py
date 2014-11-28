@@ -351,6 +351,9 @@ class MainWindow(gtk.Window):
 	
 	def delete_definition(self,widget):
 		model, treeiter = self.definition_tree.get_selection().get_selected()
+		name=model[treeiter][0]
+		defi=self.get_definition_from_name(name)
+		self.definitions.remove(defi)
 		self.definition_store.remove(treeiter)
 	
 	def add_definition_dialog(self,widget):
